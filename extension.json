@@ -1,0 +1,19 @@
+{
+    "name": "AetAnalytics",
+    "version": "1.0.0",
+    "author": "[https://github.com/exizt exizt]",
+    "url": "https://github.com/exizt/mw-ext-AetAnalytics",
+    "description": "구글 애드센스를 적용시키기 위한 확장기능",
+    "license-name": "GPL-2.0-or-later",
+    "type": "other",
+    "requires": {
+        "MediaWiki": ">= 1.35.0"
+    },
+    "AutoloadClasses": {
+        "AetAnalytics": "src/AetAnalytics.php"
+    },
+    "Hooks": {
+        "BeforePageDisplay": "AetAnalytics::onBeforePageDisplay"
+    },
+    "manifest_version": 2
+}
