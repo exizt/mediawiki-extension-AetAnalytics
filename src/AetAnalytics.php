@@ -16,8 +16,6 @@ class AetAnalytics {
 	/**
 	 * 'BeforePageDisplay' 후킹.
 	 *
-	 * 
-	 * 
 	 * @param Article $article
 	 * @param OutputPage $out
 	 * @param Skin $skin
@@ -33,12 +31,16 @@ class AetAnalytics {
 		# 설정값 조회
 		$config = self::getConfiguration();
 
+		# getResultHTML
 		$result = self::getResultHTML( $config, $skin->getContext() );
 		if($result){
 			$out->addHeadItem('gtag-insert', $result);
 		}
 	}
 
+	/**
+	 * 생성될 HTML
+	 */
 	private static function getResultHTML( $config, $context ){
 		// 유효성 체크
 		if( !self::isAvailable( $config, $context ) ){
@@ -48,7 +50,9 @@ class AetAnalytics {
 		return self::makeGoogleAnalyticsHTML( $config['ga_tag_id'] );
 	}
 
-
+	/**
+	 * 'Google Analytics'의 HTML 생성
+	 */
 	private static function makeGoogleAnalyticsHTML( $tagId ): string{
 		if(! $tagId ){
 			return '';
@@ -140,10 +144,7 @@ EOT;
 				return false;
 			}
 		}
-
-		# self::debugLog("isAvailable");
-		# self::debugLog($ns);
-
+		
 		// $titleObj = $context->getTitle();
 
 		// 메인 이름공간의 페이지에서만 나오도록 함. 특수문서 등에서 나타나지 않도록.
