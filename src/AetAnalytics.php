@@ -45,11 +45,11 @@ class AetAnalytics {
 			return false;
 		}
 
-		return self::makeGoogleAnalyticsHTML($tagId);
+		return self::makeGoogleAnalyticsHTML( $config['ga_tag_id'] );
 	}
 
 
-	private static function makeGoogleAnalyticsHTML($tagId): string{
+	private static function makeGoogleAnalyticsHTML( $tagId ): string{
 		if(! $tagId ){
 			return '';
 		}
@@ -63,6 +63,7 @@ class AetAnalytics {
   gtag('config', '{$tagId}');
 </script>
 EOT;
+		return $html;
 	}
 
 	/**
