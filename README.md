@@ -8,4 +8,8 @@ AetAnalytics
 
 # 설정
 
-## 옵션
+# 옵션
+- `$wgAetAnalytics['ga_tag_id']`
+    - 구글 애널리틱스의 태그 ID. (eg: `'G-XX..'` or `'UA-XX..'`)
+        - type : `string`
+        - default : `''`
