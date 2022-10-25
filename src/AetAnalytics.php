@@ -198,28 +198,38 @@ EOT;
 	}
 
 	/**
-	 * 로깅 관련
+	 * 설정값 조회
+	 */
+	private static function getUserLocalSettings(){
+		global $wgAetAnalytics;
+		return $wgAetAnalytics;
+	}
+
+	/**
+	 * 디버그 로깅 관련
 	 */
 	private static function debugLog($msg){
-		global $wgDebugToolbar, $wgAetAnalytics;
+		global $wgDebugToolbar;
 
 		# 디버그툴바 사용중일 때만 허용.
 		$useDebugToolbar = $wgDebugToolbar ?? false;
 		if( !$useDebugToolbar ){
 			return false;
 		}
-
-		// 로깅
-		$isDebug = $wgAetAnalytics['debug'] ?? false;
+		
+		# 로깅
+		$userSettings = self::getUserLocalSettings();
+		$isDebug = $userSettings['debug'] ?? false;
 		if($isDebug){
 			if(is_string($msg)){
-				wfDebugLog('AetAnalytics', $msg);
+				wfDebugLog(static::class, $msg);
 			} else if(is_object($msg) || is_array($msg)){
-				wfDebugLog('AetAnalytics', json_encode($msg));
+				wfDebugLog(static::class, json_encode($msg));
 			} else {
-				wfDebugLog('AetAnalytics', json_encode($msg));
+				wfDebugLog(static::class, json_encode($msg));
 			}
+		} else {
+			return false;
 		}
-		return false;
 	}
 }
