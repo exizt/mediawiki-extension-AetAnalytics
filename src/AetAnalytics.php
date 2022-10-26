@@ -8,9 +8,9 @@
  */
 
 class AetAnalytics {
-	// 설정값을 갖게 되는 멤버 변수
+	# 설정값을 갖게 되는 멤버 변수
 	private static $config = null;
-	// 이용 가능한지 여부 (isAvailable 메소드에서 체크함)
+	# 이용 가능한지 여부 (isAvailable 메소드에서 체크함)
 	private static $_isAvailable = true;
 
 	/**
@@ -161,12 +161,10 @@ EOT;
 	 */
 	private static function getConfiguration(){
 		# 한 번 로드했다면, 그 후에는 로드하지 않도록 처리.
-		if( ! is_null(self::$config) ){
+		if( !is_null(self::$config) ){
 			return self::$config;
 		}
 		self::debugLog('::getConfiguration');
-
-		global $wgAetAnalytics;
 
 		/*
 		* 설정 기본값
@@ -183,16 +181,20 @@ EOT;
 		];
 		
 		# 설정값 병합
-		if (isset($wgAetAnalytics)){
-			foreach ($wgAetAnalytics as $key => $value) {
+		$userSettings = self::getUserLocalSettings();
+		if (isset($userSettings)){
+			foreach ($userSettings as $key => $value) {
 				if( array_key_exists($key, $config) ) {
 					if( gettype($config[$key]) == gettype($value) ){
 						$config[$key] = $value;
+					} else {
+						self::debugLog($key.'옵션값이 잘못되었습니다.');
 					}
 				}
 			}
 		}
 
+		self::debugLog($config);
 		self::$config = $config;
 		return $config;
 	}
@@ -223,8 +225,6 @@ EOT;
 		if($isDebug){
 			if(is_string($msg)){
 				wfDebugLog(static::class, $msg);
-			} else if(is_object($msg) || is_array($msg)){
-				wfDebugLog(static::class, json_encode($msg));
 			} else {
 				wfDebugLog(static::class, json_encode($msg));
 			}
