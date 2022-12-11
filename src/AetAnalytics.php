@@ -31,17 +31,19 @@ class AetAnalytics {
 		# 설정값 조회
 		$config = self::getConfiguration();
 
-		# getResultHTML
-		$result = self::getResultHTML( $config, $skin->getContext() );
-		if($result){
-			$out->addHeadItem('gtag-insert', $result);
+		# HTML 문자열 생성
+		$html = self::getOutputHTML( $config, $skin->getContext() );
+		if($html){
+			$out->addHeadItem('gtag-insert', $html);
 		}
 	}
 
 	/**
 	 * 생성될 HTML
+	 * 
+	 * @return false|string
 	 */
-	private static function getResultHTML( $config, $context ){
+	private static function getOutputHTML( $config, $context ){
 		// 유효성 체크
 		if( !self::isAvailable( $config, $context ) ){
 			return false;
@@ -131,7 +133,7 @@ EOT;
 		}
 
 		# 익명 사용자만 해당하는 옵션이 있을 경우.
-		if ( $context->getUser()->isRegistered() && $config['anon_only'] ) {
+		if ( $config['anon_only'] && $context->getUser()->isRegistered() ) {
 			self::setDisabled();
 			return false;
 		}
@@ -181,7 +183,7 @@ EOT;
 		];
 		
 		# 설정값 병합
-		$userSettings = self::getUserLocalSettings();
+		$userSettings = self::readAppSettings();
 		if (isset($userSettings)){
 			foreach ($userSettings as $key => $value) {
 				if( array_key_exists($key, $config) ) {
@@ -200,9 +202,9 @@ EOT;
 	}
 
 	/**
-	 * 설정값 조회
+	 * 해당되는 설정값 조회
 	 */
-	private static function getUserLocalSettings(){
+	private static function readAppSettings(){
 		global $wgAetAnalytics;
 		return $wgAetAnalytics;
 	}
@@ -214,13 +216,13 @@ EOT;
 		global $wgDebugToolbar;
 
 		# 디버그툴바 사용중일 때만 허용.
-		$useDebugToolbar = $wgDebugToolbar ?? false;
-		if( !$useDebugToolbar ){
+		$isDebugToolbarEnabled = $wgDebugToolbar ?? false;
+		if( !$isDebugToolbarEnabled ){
 			return false;
 		}
 		
 		# 로깅
-		$userSettings = self::getUserLocalSettings();
+		$userSettings = self::readAppSettings();
 		$isDebug = $userSettings['debug'] ?? false;
 		if($isDebug){
 			if(is_string($msg)){
