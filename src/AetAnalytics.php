@@ -185,7 +185,7 @@ EOT;
 		];
 		
 		# 설정값 병합
-		$userSettings = self::readAppSettings();
+		$userSettings = self::readSettings();
 		if (isset($userSettings)){
 			foreach ($userSettings as $key => $value) {
 				if( array_key_exists($key, $config) ) {
@@ -206,7 +206,7 @@ EOT;
 	/**
 	 * 해당되는 설정값 조회
 	 */
-	private static function readAppSettings(){
+	private static function readSettings(){
 		global $wgAetAnalytics;
 		return $wgAetAnalytics;
 	}
