@@ -6,17 +6,19 @@
  * @author exizt
  * @license GPL-2.0-or-later
  */
-
 class AetAnalytics {
 	# 설정값을 갖게 되는 멤버 변수
 	private static $config = null;
 	# 이용 가능한지 여부 (isAvailable 메소드에서 체크함)
 	private static $_isAvailable = true;
+	# 이용할지 여부
+	private static $isEnabled = false;
+	# 유효성 체크가 필요한지 여부
+	private static $shouldValidate = true;
 
 	/**
 	 * 'BeforePageDisplay' 후킹.
 	 *
-	 * @param Article $article
 	 * @param OutputPage $out
 	 * @param Skin $skin
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/BeforePageDisplay
