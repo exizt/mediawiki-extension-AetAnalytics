@@ -220,20 +220,18 @@ EOT;
 		# 디버그툴바 사용중일 때만 허용.
 		$isDebugToolbarEnabled = $wgDebugToolbar ?? false;
 		if( !$isDebugToolbarEnabled ){
-			return false;
+			return;
 		}
 		
 		# 로깅
-		$userSettings = self::readAppSettings();
-		$isDebug = $userSettings['debug'] ?? false;
+		$settings = self::readSettings();
+		$isDebug = $settings['debug'] ?? false;
 		if($isDebug){
 			if(is_string($msg)){
 				wfDebugLog(static::class, $msg);
 			} else {
 				wfDebugLog(static::class, json_encode($msg));
 			}
-		} else {
-			return false;
 		}
 	}
 }
