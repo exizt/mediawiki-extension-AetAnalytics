@@ -11,8 +11,10 @@ class AetAnalytics {
 	private static $config = null;
 	# 이용 가능한지 여부 (isAvailable 메소드에서 체크함)
 	private static $_isAvailable = true;
+
 	# 이용할지 여부
 	private static $isEnabled = false;
+	
 	# 유효성 체크가 필요한지 여부
 	private static $shouldValidate = true;
 
@@ -41,9 +43,11 @@ class AetAnalytics {
 	}
 
 	/**
-	 * 생성될 HTML
+	 * 생성될 헤더 HTML
 	 * 
-	 * @return false|string
+	 * @param array $config
+	 * @param IContextSource $context
+	 * @return string
 	 */
 	private static function getOutputHTML( $config, $context ){
 		// 유효성 체크
@@ -56,6 +60,9 @@ class AetAnalytics {
 
 	/**
 	 * 'Google Analytics'의 HTML 생성
+	 * 
+	 * @param string $tagId 구글애널리틱스 태그 아이디
+	 * @return string HTML 문자열
 	 */
 	private static function makeGoogleAnalyticsHTML( $tagId ): string{
 		if(! $tagId ){
@@ -76,8 +83,11 @@ EOT;
 
 	/**
 	 * AdSense의 ID가 제대로된 입력값인지 확인.
+	 * 
+	 * @param string $tagId 구글애널리틱스 태그 아이디
+	 * @return bool 검증 결과
 	 */
-	private static function isValidTagId( $tagId ){
+	private static function isValidTagId( $tagId ): bool{
 		if( ! is_string($tagId) || strlen($tagId) < 5 ) {
 			return false;
 		}
@@ -90,8 +100,10 @@ EOT;
 
 	/**
 	 * 최소 조건 체크.
+	 * - 확장 기능이 동작할 수 있는지에 대한 최소 조건 체크. 성능상 부담이 없도록 구성.
+	 * - 인자값을 받지 않음
 	 * 
-	 * 확장 기능이 동작할 수 있는지에 대한 최소 조건 체크. 성능상 부담이 없도록 구성.
+	 * @return bool 검증 결과
 	 */
 	private static function isValid(){
 		global $wgAetAnalytics;
@@ -126,6 +138,10 @@ EOT;
 
 	/**
 	 * 조건 체크
+	 * 
+	 * @param array $config
+	 * @param IContextSource $context
+	 * @return bool 검증 결과
 	 */
 	private static function isAvailable( $config, $context ){
 		
@@ -185,9 +201,9 @@ EOT;
 		];
 		
 		# 설정값 병합
-		$userSettings = self::readSettings();
-		if (isset($userSettings)){
-			foreach ($userSettings as $key => $value) {
+		$settings = self::readSettings();
+		if (isset($settings)){
+			foreach ($settings as $key => $value) {
 				if( array_key_exists($key, $config) ) {
 					if( gettype($config[$key]) == gettype($value) ){
 						$config[$key] = $value;
@@ -204,11 +220,24 @@ EOT;
 	}
 
 	/**
-	 * 해당되는 설정값 조회
+	 * 전역 설정값 조회
+	 * 
+	 * @return array|mixed 설정된 값 또는 undefined|null를 반환
 	 */
 	private static function readSettings(){
 		global $wgAetAnalytics;
 		return $wgAetAnalytics;
+	}
+
+	/**
+	 * '사용 안 함'을 설정.
+	 * 
+	 * @return false false 반환.
+	 */
+	private static function disable(): bool{
+		self::$shouldValidate = false;
+		self::$isEnabled = false;
+		return false;
 	}
 
 	/**
