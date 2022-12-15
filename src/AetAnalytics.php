@@ -238,6 +238,8 @@ EOT;
 
 	/**
 	 * 디버그 로깅 관련
+	 * 
+	 * @param string|object $msg 디버깅 메시지 or 오브젝트
 	 */
 	private static function debugLog($msg){
 		global $wgDebugToolbar;
