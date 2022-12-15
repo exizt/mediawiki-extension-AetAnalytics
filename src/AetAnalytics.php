@@ -9,8 +9,6 @@
 class AetAnalytics {
 	# 설정값을 갖게 되는 멤버 변수
 	private static $config = null;
-	# 이용 가능한지 여부 (isAvailable 메소드에서 체크함)
-	private static $_isAvailable = true;
 
 	# 이용할지 여부
 	private static $isEnabled = false;
@@ -28,18 +26,22 @@ class AetAnalytics {
 	 */
 	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
 		# 최소 유효성 체크
-		if( !self::isValid() ){
-			return;
-		}
+		if( self::isValid() ){
+			# 설정값 조회
+			$config = self::getConfiguration();
+	
+			# 유효성 체크
+			if( self::isEnabledWithCheck( $config, $skin->getContext() ) ){
+				# HTML 문자열 생성
+				$html = self::getOutputHTML( $config, $skin->getContext() );
+				if( !empty($html) ){
+					$out->addHeadItem('gtag-insert', $html);
+				}
+			}
 
-		# 설정값 조회
-		$config = self::getConfiguration();
-
-		# HTML 문자열 생성
-		$html = self::getOutputHTML( $config, $skin->getContext() );
-		if($html){
-			$out->addHeadItem('gtag-insert', $html);
 		}
+		return;
+
 	}
 
 	/**
@@ -49,13 +51,9 @@ class AetAnalytics {
 	 * @param IContextSource $context
 	 * @return string
 	 */
-	private static function getOutputHTML( $config, $context ){
-		// 유효성 체크
-		if( !self::isAvailable( $config, $context ) ){
-			return false;
-		}
-
-		return self::makeGoogleAnalyticsHTML( $config['ga_tag_id'] );
+	private static function getOutputHTML( $config, $context ): string{
+		# self::debugLog('::getOutputHTML');
+		return self::makeScriptHTML( $config['ga_tag_id'] );
 	}
 
 	/**
@@ -64,7 +62,7 @@ class AetAnalytics {
 	 * @param string $tagId 구글애널리틱스 태그 아이디
 	 * @return string HTML 문자열
 	 */
-	private static function makeGoogleAnalyticsHTML( $tagId ): string{
+	private static function makeScriptHTML( $tagId ): string{
 		if(! $tagId ){
 			return '';
 		}
@@ -105,35 +103,31 @@ EOT;
 	 * 
 	 * @return bool 검증 결과
 	 */
-	private static function isValid(){
-		global $wgAetAnalytics;
+	private static function isValid(): bool{
 
-		# 기존의 체크에서 false 가 되었던 것이 있다면, 바로 false 리턴.
-		if( !self::$_isAvailable ){
-			return false;
+		# 검증이 필요한지 여부.
+		if ( self::$shouldValidate ){
+			# 전역 설정 로드
+			$settings = self::readSettings();
+
+			# 설정되어 있지 않음
+			if ( ! isset($settings) ){
+				return self::disable();
+			}
+
+			# 'tag_id'가 유효한지 여부
+			$tagId = $settings['ga_tag_id'] ?? '';
+			if ( self::isValidTagId( $tagId ) ){
+				return true;
+			}
+	
+			# 검증을 통과하지 못하였으므로 disabled
+			return self::disable();
+
+		} else {
+			# 이미 한 번 검증했으므로 결과값을 그대로 반환.
+			return self::$isEnabled;
 		}
-
-		# 설정되어 있지 않음
-		if ( ! isset($wgAetAnalytics) ){
-			self::setDisabled();
-			return false;
-		}
-
-		# 'tag_id'가 유효함
-		$tagId = $wgAetAnalytics['ga_tag_id'] ?? '';
-		if ( self::isValidTagId( $tagId ) ){
-			return true;
-		}
-
-		self::setDisabled();
-		return false;
-	}
-
-	/**
-	 * '사용 안 함'을 설정.
-	 */
-	private static function setDisabled(){
-		self::$_isAvailable = false;
 	}
 
 	/**
@@ -143,37 +137,39 @@ EOT;
 	 * @param IContextSource $context
 	 * @return bool 검증 결과
 	 */
-	private static function isAvailable( $config, $context ){
-		
-		# 기존의 체크에서 false 가 되었던 것이 있다면, 바로 false 리턴.
-		if( !self::$_isAvailable ){
-			return false;
-		}
-
-		# 익명 사용자만 해당하는 옵션이 있을 경우.
-		if ( $config['anon_only'] && $context->getUser()->isRegistered() ) {
-			self::setDisabled();
-			return false;
-		}
-
-		# 특정 아이피에서는 이용하지 않는다.
-		if ( ! empty($config['exclude_ip_list']) ){
-			$remoteAddr = $_SERVER["REMOTE_ADDR"] ?? '';
-			if( in_array($remoteAddr, $config['exclude_ip_list']) ){
-				self::setDisabled();
-				return false;
+	private static function isEnabledWithCheck( $config, $context ): bool{
+		# 검증이 필요한지 여부.
+		if ( self::$shouldValidate ){
+			# 익명 사용자만 해당하는 옵션이 있을 경우.
+			if ( $config['anon_only'] && $context->getUser()->isRegistered() ) {
+				return self::disable();
 			}
+	
+			# 특정 아이피에서는 이용하지 않는다.
+			if ( ! empty($config['exclude_ip_list']) ){
+				$remoteAddr = $_SERVER["REMOTE_ADDR"] ?? '';
+				if( in_array($remoteAddr, $config['exclude_ip_list']) ){
+					return self::disable();
+				}
+			}
+			
+			// $titleObj = $context->getTitle();
+	
+			// 메인 이름공간의 페이지에서만 나오도록 함. 특수문서 등에서 나타나지 않도록.
+			//if( $titleObj->getNamespace() != NS_MAIN ){
+			//	self::setDisabled();
+			//	return false;
+			//}
+
+			# 검증을 통과하였고 isEnabled=true이다.
+			self::$shouldValidate = false;
+			self::$isEnabled = true;
+			return true;
+
+		} else {
+			# 이미 한 번 검증했으므로 결과값을 그대로 반환.
+			return self::$isEnabled;
 		}
-		
-		// $titleObj = $context->getTitle();
-
-		// 메인 이름공간의 페이지에서만 나오도록 함. 특수문서 등에서 나타나지 않도록.
-		//if( $titleObj->getNamespace() != NS_MAIN ){
-		//	self::setDisabled();
-		//	return false;
-		//}
-
-		return true;
 	}
 
 	/**
