@@ -12,7 +12,7 @@ class AetAnalytics {
 
 	# 이용할지 여부
 	private static $isEnabled = false;
-	
+
 	# 유효성 체크가 필요한지 여부
 	private static $shouldValidate = true;
 
@@ -29,7 +29,7 @@ class AetAnalytics {
 		if( self::isValid() ){
 			# 설정값 조회
 			$config = self::getConfiguration();
-	
+
 			# 유효성 체크
 			if( self::isEnabledWithCheck( $config, $skin->getContext() ) ){
 				# HTML 문자열 생성
@@ -46,7 +46,7 @@ class AetAnalytics {
 
 	/**
 	 * 생성될 헤더 HTML
-	 * 
+	 *
 	 * @param array $config
 	 * @param IContextSource $context
 	 * @return string
@@ -58,7 +58,7 @@ class AetAnalytics {
 
 	/**
 	 * 'Google Analytics'의 HTML 생성
-	 * 
+	 *
 	 * @param string $tagId 구글애널리틱스 태그 아이디
 	 * @return string HTML 문자열
 	 */
@@ -81,7 +81,7 @@ EOT;
 
 	/**
 	 * AdSense의 ID가 제대로된 입력값인지 확인.
-	 * 
+	 *
 	 * @param string $tagId 구글애널리틱스 태그 아이디
 	 * @return bool 검증 결과
 	 */
@@ -100,7 +100,7 @@ EOT;
 	 * 최소 조건 체크.
 	 * - 확장 기능이 동작할 수 있는지에 대한 최소 조건 체크. 성능상 부담이 없도록 구성.
 	 * - 인자값을 받지 않음
-	 * 
+	 *
 	 * @return bool 검증 결과
 	 */
 	private static function isValid(): bool{
@@ -120,7 +120,7 @@ EOT;
 			if ( self::isValidTagId( $tagId ) ){
 				return true;
 			}
-	
+
 			# 검증을 통과하지 못하였으므로 disabled
 			return self::disable();
 
@@ -132,7 +132,7 @@ EOT;
 
 	/**
 	 * 조건 체크
-	 * 
+	 *
 	 * @param array $config
 	 * @param IContextSource $context
 	 * @return bool 검증 결과
@@ -144,7 +144,7 @@ EOT;
 			if ( $config['anon_only'] && $context->getUser()->isRegistered() ) {
 				return self::disable();
 			}
-	
+
 			# 특정 아이피에서는 이용하지 않는다.
 			if ( ! empty($config['exclude_ip_list']) ){
 				$remoteAddr = $_SERVER["REMOTE_ADDR"] ?? '';
@@ -152,9 +152,9 @@ EOT;
 					return self::disable();
 				}
 			}
-			
+
 			// $titleObj = $context->getTitle();
-	
+
 			// 메인 이름공간의 페이지에서만 나오도록 함. 특수문서 등에서 나타나지 않도록.
 			//if( $titleObj->getNamespace() != NS_MAIN ){
 			//	self::setDisabled();
@@ -184,7 +184,7 @@ EOT;
 
 		/*
 		* 설정 기본값
-		* 
+		*
 		* ga_tag_id : 구글 애널리틱스 id 값. (예: UA-XXX 또는 G-XXX)
 		* anon_only : '비회원'만 애드센스 노출하기.
 		* exclude_ip_list : 애드센스를 보여주지 않을 IP 목록.
@@ -195,7 +195,7 @@ EOT;
 			'exclude_ip_list' => array(),
 			'debug' => false
 		];
-		
+
 		# 설정값 병합
 		$settings = self::readSettings();
 		if (isset($settings)){
@@ -217,7 +217,7 @@ EOT;
 
 	/**
 	 * 전역 설정값 조회
-	 * 
+	 *
 	 * @return array|mixed 설정된 값 또는 undefined|null를 반환
 	 */
 	private static function readSettings(){
@@ -227,7 +227,7 @@ EOT;
 
 	/**
 	 * '사용 안 함'을 설정.
-	 * 
+	 *
 	 * @return false false 반환.
 	 */
 	private static function disable(): bool{
@@ -238,7 +238,7 @@ EOT;
 
 	/**
 	 * 디버그 로깅 관련
-	 * 
+	 *
 	 * @param string|object $msg 디버깅 메시지 or 오브젝트
 	 */
 	private static function debugLog($msg){
@@ -249,7 +249,7 @@ EOT;
 		if( !$isDebugToolbarEnabled ){
 			return;
 		}
-		
+
 		# 로깅
 		$settings = self::readSettings();
 		$isDebug = $settings['debug'] ?? false;
